@@ -1,6 +1,7 @@
 ﻿using EstudosAPI.IRepository;
 using EstudosAPI.Model;
 using EstudosAPI.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EstudosAPI.Controllers
@@ -18,26 +19,45 @@ namespace EstudosAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public IActionResult Add([FromForm] UserViewModel UserView)
         {
-            var FilePath = Path.Combine("Storage", UserView.Photo.FileName);
-            using Stream FileStream = new FileStream(FilePath, FileMode.Create);
-            UserView.Photo.CopyTo(FileStream);
+            if(UserView.Photo != null)
+            {
+                var FilePath = Path.Combine("Storage", UserView.Photo.FileName);
+                using Stream FileStream = new FileStream(FilePath, FileMode.Create);
+                UserView.Photo.CopyTo(FileStream);
 
-            User _user = new User(UserView.Name,UserView.Email, UserView.Login, UserView.Password, FilePath);
-            userRepository.Add(_user);
+                User _user = new User(UserView.Name, UserView.Email, UserView.Login, UserView.Password, FilePath);
+                userRepository.Add(_user);
+            }
+            else
+            {
+                User _user = new User(UserView.Name, UserView.Email, UserView.Login, UserView.Password, string.Empty);
+                userRepository.Add(_user);
+            }
 
             return Ok();
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get(int PageNumber,int RegisterPerPage)
         {
-            List<User> Users = userRepository.Get();
+            List<User> Users = userRepository.Get(PageNumber,RegisterPerPage);
             return Ok(Users);
         }
 
         [HttpGet]
+        [Authorize]
+        [Route("{Login}/{Password}")]
+        public IActionResult Get(string Login, string Password)
+        {
+            User? user = userRepository.GetUserByLoginAndPassword(Login, Password);
+            return Ok(user);
+        }
+
+        [HttpGet]
+        [Authorize]
         [Route("{UserId}")]
         public IActionResult GetUser(int UserId)
         {
@@ -50,6 +70,7 @@ namespace EstudosAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [Route("{UserId}/DownloadPhoto")]
         public IActionResult DownloadUserPhoto(int UserId)
         {

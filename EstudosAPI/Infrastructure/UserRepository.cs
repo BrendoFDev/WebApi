@@ -13,15 +13,21 @@ namespace EstudosAPI.Infrastructure
             Context.SaveChanges();
         }
 
-        public List<User> Get()
+        public List<User> Get(int PageNumber, int RegisterPerPage)
         {
-            return Context.User.ToList();
+            return Context.User.Skip(PageNumber * RegisterPerPage).Take(RegisterPerPage).ToList();
         }
 
         public User? GetUser(int id)
         {
             var User = Context.User.Find(id);
             return User;
+        }
+
+        public User? GetUserByLoginAndPassword(string login, string password)
+        {
+            var user = Context.User.Where(x=>x.login == login && x.senha == password);
+            return user.FirstOrDefault();
         }
     }
 }

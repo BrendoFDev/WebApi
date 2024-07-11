@@ -6,9 +6,9 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace EstudosAPI.Services
 {
-    public class TokenService : ITokenService
+    public class TokenService
     {
-        public object GenerateToken(User user)
+        public static object GenerateToken(User user)
         {
             var key = Encoding.ASCII.GetBytes(Key.Secret);
             var TokenConfig = new SecurityTokenDescriptor
@@ -31,10 +31,5 @@ namespace EstudosAPI.Services
             };
         }
 
-    }
-
-    public interface ITokenService
-    {
-         public object GenerateToken(User user);
     }
 }
